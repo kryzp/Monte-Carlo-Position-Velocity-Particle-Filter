@@ -10,7 +10,6 @@ public class Main {
 
 	private static int renderProgress = 0;
 
-	private static Environment environment;
 	private static Belief belief;
 
 	private static double actualPositionX;
@@ -44,7 +43,7 @@ public class Main {
 		// draw chunks
 		for(int y = 0; y < RENDER_RESOLUTION; y++) {
 			for(int x = 0; x < RENDER_RESOLUTION; x++) {
-				if(environment.isLoadedChunkAt(x, y)) {
+				if(belief.getEnvironment().isLoadedChunkAt(x, y)) {
 					graphics.drawLine(x * RENDER_RESOLUTION, y * RENDER_RESOLUTION, (x * RENDER_RESOLUTION) + RENDER_RESOLUTION, (y * RENDER_RESOLUTION) + RENDER_RESOLUTION);
 					graphics.drawLine((x * RENDER_RESOLUTION) + RENDER_RESOLUTION, y * RENDER_RESOLUTION, x * RENDER_RESOLUTION, (y * RENDER_RESOLUTION) + RENDER_RESOLUTION);
 				}
@@ -108,7 +107,7 @@ public class Main {
 	}
 
 	public static void main(String[] args) {
-		environment = new Environment();
+		Environment environment = new Environment();
 		belief = new Belief(environment, 0, 0);
 
 		actualPositionX = 0.0;
@@ -153,10 +152,6 @@ public class Main {
 		System.out.format("Chunk Pos : %.2f, %.2f %n",              (float)chunkX, (float)chunkY);
 		System.out.format("Prediction: %.2f, %.2f | %.2f, %.2f %n", prediction.getX(), prediction.getY(), prediction.getVx(), prediction.getVy());
 		System.out.format("True Value: %.2f, %.2f | %.2f, %.2f %n", actualPositionX, actualPositionY, actualVelocityX, actualVelocityY);
-	}
-
-	public static Environment getEnvironment() {
-		return environment;
 	}
 
 	public static Belief getBelief() {

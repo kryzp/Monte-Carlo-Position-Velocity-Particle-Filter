@@ -4,13 +4,12 @@ public class Belief {
 
 	public static final int PARTICLE_COUNT = 1000;
 
-	ArrayList<Particle> particles = new ArrayList<Particle>();
-
 	private final Environment environment;
+
+	ArrayList<Particle> particles = new ArrayList<Particle>();
 
 	public Belief(Environment env, int initChunkX, int initChunkY) {
 		this.environment = env;
-
 		for (int i = 0; i < PARTICLE_COUNT; i++) {
 			Particle part = new Particle(Particle.EMPTY);
 
@@ -33,7 +32,7 @@ public class Belief {
 		for (int i = 0; i < PARTICLE_COUNT; i++) {
 			var particle = new Particle(particles.get(i));
 			particle.move();
-			weighted.add(particle, particle.getWeight());
+			weighted.add(particle, particle.getWeight(environment));
 		}
 
 		particles.clear();
@@ -49,8 +48,8 @@ public class Belief {
 		Particle result = new Particle(Particle.EMPTY);
 
 		for (Particle here : particles) {
-			result.setX(result.getX() + here.getX());
-			result.setY(result.getY() + here.getY());
+			result.setX (result.getX()  + here.getX());
+			result.setY (result.getY()  + here.getY());
 			result.setVx(result.getVx() + here.getVx());
 			result.setVy(result.getVy() + here.getVy());
 		}
@@ -65,5 +64,9 @@ public class Belief {
 
 	public ArrayList<Particle> getParticles() {
 		return particles;
+	}
+
+	public Environment getEnvironment() {
+		return environment;
 	}
 }

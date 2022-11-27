@@ -41,8 +41,8 @@ public class Particle {
 		this.y += POSITION_CHANGE * (Main.RANDOM.nextDouble() - 0.5);
 	}
 
-	public double getWeight() {
-		boolean sensor = Main.getEnvironment().isLoadedChunkAt((int)x, (int)y);
+	public double getWeight(Environment env) {
+		boolean sensor = env.isLoadedChunkAt((int)x, (int)y);
 
 		// check if chunk is loaded, if it is there is a high probability that this particle is in the right spot
 		if (sensor == true) {
