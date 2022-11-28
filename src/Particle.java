@@ -6,6 +6,8 @@ public class Particle {
 
 	public static final Particle EMPTY = new Particle(0.0, 0.0, 0.0, 0.0);
 
+	private int ticksWithoutLoadedChunk;
+
 	private double x;
 	private double y;
 	private double vx;
@@ -13,6 +15,8 @@ public class Particle {
 
 	public Particle(double x, double y, double vx, double vy)
 	{
+		this.ticksWithoutLoadedChunk = 0;
+
 		this.x  = x;
 		this.y  = y;
 		this.vx = vx;
@@ -21,6 +25,8 @@ public class Particle {
 
 	public Particle(Particle other)
 	{
+		this.ticksWithoutLoadedChunk = 0;
+
 		this.x  = other.x;
 		this.y  = other.y;
 		this.vx = other.vx;
@@ -42,14 +48,21 @@ public class Particle {
 	}
 
 	public double getWeight(Environment env) {
-		boolean sensor = env.isLoadedChunkAt((int)x, (int)y);
+		boolean isOnLoadedChunk = env.isLoadedChunkAt((int)x, (int)y);
 
 		// check if chunk is loaded, if it is there is a high probability that this particle is in the right spot
-		if (sensor == true) {
+		if (isOnLoadedChunk) {
+			ticksWithoutLoadedChunk = 0;
 			return 0.95;
 		}
 
-		return 0.05;
+		ticksWithoutLoadedChunk++;
+		return calculateNotOnLoadedChunkWeight();
+	}
+
+	// the fewer updates we receive on loaded chunks, the higher this probability must become to combat that and account for possibly loaded chunks
+	private double calculateNotOnLoadedChunkWeight() {
+		return 0.075 + ((double)ticksWithoutLoadedChunk / 512.0);
 	}
 
 	public void move() {

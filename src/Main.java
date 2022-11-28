@@ -2,6 +2,7 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.Random;
 
 public class Main {
@@ -106,7 +107,15 @@ public class Main {
 		}
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
+
+		double errorXAvg = 0.0;
+		double errorYAvg = 0.0;
+		double errorVxAvg = 0.0;
+		double errorVyAvg = 0.0;
+
+		final int ITERATIONS = 256;
+
 		Environment environment = new Environment();
 		belief = new Belief(environment, 0, 0);
 
@@ -125,33 +134,52 @@ public class Main {
 			chunkX = (int)actualPositionX;
 			chunkY = (int)actualPositionY;
 
-			if (environment.isChunkOutOfBounds(chunkX, chunkY)) {
+			if (environment.isChunkOutOfBounds(chunkX, chunkY) || (chunkX == 13 && chunkY == 8)) {
 				break;
 			}
 
-			environment.resetLoadedChunks();
+			if (i % 4 == 0) {
+				environment.resetLoadedChunks();
+				environment.setLoadedChunk(chunkX - 1, chunkY - 1);
+				environment.setLoadedChunk(chunkX + 0, chunkY - 1);
+				environment.setLoadedChunk(chunkX + 1, chunkY - 1);
+				environment.setLoadedChunk(chunkX - 1, chunkY + 0);
+				environment.setLoadedChunk(chunkX + 0, chunkY + 0);
+				environment.setLoadedChunk(chunkX + 1, chunkY + 0);
+				environment.setLoadedChunk(chunkX - 1, chunkY + 1);
+				environment.setLoadedChunk(chunkX + 0, chunkY + 1);
+				environment.setLoadedChunk(chunkX + 1, chunkY + 1);
+			}
 
-			environment.setLoadedChunk(chunkX - 1, chunkY - 1);
-			environment.setLoadedChunk(chunkX + 0, chunkY - 1);
-			environment.setLoadedChunk(chunkX + 1, chunkY - 1);
-			environment.setLoadedChunk(chunkX - 1, chunkY + 0);
-			environment.setLoadedChunk(chunkX + 0, chunkY + 0);
-			environment.setLoadedChunk(chunkX + 1, chunkY + 0);
-			environment.setLoadedChunk(chunkX - 1, chunkY + 1);
-			environment.setLoadedChunk(chunkX + 0, chunkY + 1);
-			environment.setLoadedChunk(chunkX + 1, chunkY + 1);
+			belief.update();
 
-			//if (i % 4 == 0) {
-				belief.update();
-			//}
+			Particle prediction = belief.getPredictedParticle();
+			double errorX = Math.abs(prediction.getX() - actualPositionX);
+			double errorY = Math.abs(prediction.getY() - actualPositionY);
+			double errorVx = Math.abs(prediction.getVx() - actualVelocityX);
+			double errorVy = Math.abs(prediction.getVy() - actualVelocityY);
+
+			errorXAvg += errorX;
+			errorYAvg += errorY;
+			errorVxAvg += errorVx;
+			errorVyAvg += errorVy;
+
+			System.out.format("Error : %.2f,  %.2f | %.2f, %.2f%n", errorX, errorY, errorVx, errorVy);
 
 			drawImageOfBelief();
 		}
 
-		Particle prediction = belief.getPredictedParticle();
-		System.out.format("Chunk Pos : %.2f, %.2f %n",              (float)chunkX, (float)chunkY);
-		System.out.format("Prediction: %.2f, %.2f | %.2f, %.2f %n", prediction.getX(), prediction.getY(), prediction.getVx(), prediction.getVy());
-		System.out.format("True Value: %.2f, %.2f | %.2f, %.2f %n", actualPositionX, actualPositionY, actualVelocityX, actualVelocityY);
+//		System.out.format("Chunk Pos  : %.2f, %.2f%n", (float)chunkX, (float)chunkY);
+//		System.out.format("Prediction : %.2f, %.2f | %.2f, %.2f%n", prediction.getX(), prediction.getY(), prediction.getVx(), prediction.getVy());
+//		System.out.format("True Value : %.2f, %.2f | %.2f, %.2f%n", actualPositionX, actualPositionY, actualVelocityX, actualVelocityY);
+
+		errorXAvg /= (double)ITERATIONS;
+		errorYAvg /= (double)ITERATIONS;
+		errorVxAvg /= (double)ITERATIONS;
+		errorVyAvg /= (double)ITERATIONS;
+
+		System.out.format("Error Average : %.5f, %.5f | %.5f, %.5f%n", errorXAvg, errorYAvg, errorVxAvg, errorVyAvg);
+		System.out.format("Error Total   : %f", errorXAvg + errorYAvg + errorVxAvg + errorVyAvg);
 	}
 
 	public static Belief getBelief() {

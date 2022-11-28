@@ -2,7 +2,7 @@ import java.util.ArrayList;
 
 public class Belief {
 
-	public static final int PARTICLE_COUNT = 1000;
+	public static final int PARTICLE_COUNT = 1024;
 
 	private final Environment environment;
 

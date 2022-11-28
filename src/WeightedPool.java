@@ -13,10 +13,10 @@ public class WeightedPool<T> {
 	public T getOne() {
 		double value = Main.RANDOM.nextDouble() * total;
 		for (Pair<Double, T> item : items) {
-			double weight = item.first;
+			double weight = item.first();
 			value -= weight;
 			if (value <= 0.0) {
-				return item.second;
+				return item.second();
 			}
 		}
 		return null;
