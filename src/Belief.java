@@ -3,6 +3,7 @@ import java.util.ArrayList;
 public class Belief {
 
 	public static final int PARTICLE_COUNT = 1024;
+	public static final int RANDOM_PARTICLE_COUNT = 64;
 
 	private final Environment environment;
 
@@ -11,39 +12,68 @@ public class Belief {
 	public Belief(Environment env, int initChunkX, int initChunkY) {
 		this.environment = env;
 		for (int i = 0; i < PARTICLE_COUNT; i++) {
-			Particle part = new Particle(Particle.EMPTY);
-
-			part.setX(initChunkX + Main.RANDOM.nextDouble());
-			part.setY(initChunkY + Main.RANDOM.nextDouble());
-
-			double theta  = Main.RANDOM.nextDouble() * Math.PI * 2.0;
-			double radius = Main.RANDOM.nextDouble(0.25, 1.75);
-
-			part.setVx(radius * Math.cos(theta));
-			part.setVy(radius * Math.sin(theta));
-
-			this.particles.add(part);
+			this.particles.add(getRandomParticle(initChunkX, initChunkY));
 		}
 	}
 
+	/*
+	 * Updates the belief based on the current knowledge
+	 * of the environment
+	 */
 	public void update() {
 		WeightedPool<Particle> weighted = new WeightedPool<Particle>();
 
+		// update all particles and add them to weighted list based on how probable they are
 		for (int i = 0; i < PARTICLE_COUNT; i++) {
 			var particle = new Particle(particles.get(i));
 			particle.move();
 			weighted.add(particle, particle.getWeight(environment));
 		}
 
+		// clear current particles
 		particles.clear();
 
-		for (int i = 0; i < PARTICLE_COUNT; i++) {
+		// add weighted particles into our current particle list
+		for (int i = 0; i < PARTICLE_COUNT - RANDOM_PARTICLE_COUNT; i++) {
 			Particle particle = new Particle(weighted.getOne());
 			particle.mutate();
 			particles.add(particle);
 		}
+
+		// add completely random particles
+		for (int i = 0; i < RANDOM_PARTICLE_COUNT; i++) {
+			Particle particle = new Particle(weighted.getOne());
+			particles.add(getRandomParticle(particle.getChunkX(), particle.getChunkY()));
+		}
 	}
 
+	/*
+	 * Generates a randomized particle
+	 */
+	private Particle getRandomParticle(int chunkX, int chunkY) {
+		Particle result = new Particle(Particle.EMPTY);
+
+		// randomize position
+		result.setX(chunkX + Main.RANDOM.nextDouble());
+		result.setY(chunkY + Main.RANDOM.nextDouble());
+
+		// randomize direction
+		double theta  = Main.RANDOM.nextDouble() * Math.PI * 2.0;
+
+		// randomize speed
+		double radius = Main.RANDOM.nextDouble(0.25, 1.75);
+
+		// convert polar to cartesian
+		result.setVx(radius * Math.cos(theta));
+		result.setVy(radius * Math.sin(theta));
+
+		return result;
+	}
+
+	/*
+	 * Calculate weighted mean particle with weights making
+	 * more likely particles more probable and have more effect on the mean
+	 */
 	public Particle getPredictedParticle() {
 		Particle result = new Particle(Particle.EMPTY);
 		double weightSum = 0.0;

@@ -35,8 +35,4 @@ public class Environment {
 
 		return loadedChunks[y][x] == 1;
 	}
-
-	public int[][] getLoadedChunks() {
-		return loadedChunks;
-	}
 }

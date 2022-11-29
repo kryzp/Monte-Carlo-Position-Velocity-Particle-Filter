@@ -23,6 +23,10 @@ public class Main {
 
 	public static final Random RANDOM = new Random();
 
+	/*
+	 * Writes out a visualized image of the belief
+	 * out to a png file
+	 */
 	public static void drawImageOfBelief() {
 
 		BufferedImage data = new BufferedImage(RENDER_SIZE, RENDER_SIZE, BufferedImage.TYPE_INT_RGB);
@@ -97,6 +101,9 @@ public class Main {
 		renderProgress++;
 	}
 
+	/*
+	 * Clears the output_images folder
+	 */
 	private static void deleteOutputFolder() {
 		File outputFolder = new File("/Users/kryzp/Documents/Projects/montecarlo/output_images");
 		File[] files = outputFolder.listFiles();
@@ -107,14 +114,15 @@ public class Main {
 		}
 	}
 
+	/*
+	 * Entry point
+	 */
 	public static void main(String[] args) throws IOException {
 
 		double errorXAvg = 0.0;
 		double errorYAvg = 0.0;
 		double errorVxAvg = 0.0;
 		double errorVyAvg = 0.0;
-
-		final int ITERATIONS = 256;
 
 		Environment environment = new Environment();
 		belief = new Belief(environment, 0, 0);
@@ -126,6 +134,8 @@ public class Main {
 
 		deleteOutputFolder();
 
+		boolean once = true;
+
 		for (int i = 0; i < 512; i++) {
 
 			actualPositionX += actualVelocityX;
@@ -134,11 +144,16 @@ public class Main {
 			chunkX = (int)actualPositionX;
 			chunkY = (int)actualPositionY;
 
-			if (environment.isChunkOutOfBounds(chunkX, chunkY) || (chunkX == 13 && chunkY == 8)) {
+			if (environment.isChunkOutOfBounds(chunkX, chunkY)) {
 				break;
 			}
 
-			if (i % 4 == 0) {
+			if (chunkX == 13 && chunkY == 8 && once) {
+				actualVelocityX =- actualVelocityX;
+				once = false;
+			}
+
+			//if (i % 4 == 0) {
 				environment.resetLoadedChunks();
 				environment.setLoadedChunk(chunkX - 1, chunkY - 1);
 				environment.setLoadedChunk(chunkX + 0, chunkY - 1);
@@ -149,7 +164,7 @@ public class Main {
 				environment.setLoadedChunk(chunkX - 1, chunkY + 1);
 				environment.setLoadedChunk(chunkX + 0, chunkY + 1);
 				environment.setLoadedChunk(chunkX + 1, chunkY + 1);
-			}
+			//}
 
 			belief.update();
 
@@ -164,22 +179,12 @@ public class Main {
 			errorVxAvg += errorVx;
 			errorVyAvg += errorVy;
 
-			System.out.format("Error : %.2f,  %.2f | %.2f, %.2f%n", errorX, errorY, errorVx, errorVy);
+			System.out.format("Error           : %.2f, %.2f | %.2f, %.2f%n", errorX, errorY, errorVx, errorVy);
+			System.out.format("Error Total Pos : %f%n", errorX  + errorY );
+			System.out.format("Error Total Vel : %f%n%n", errorVx + errorVy);
 
 			drawImageOfBelief();
 		}
-
-//		System.out.format("Chunk Pos  : %.2f, %.2f%n", (float)chunkX, (float)chunkY);
-//		System.out.format("Prediction : %.2f, %.2f | %.2f, %.2f%n", prediction.getX(), prediction.getY(), prediction.getVx(), prediction.getVy());
-//		System.out.format("True Value : %.2f, %.2f | %.2f, %.2f%n", actualPositionX, actualPositionY, actualVelocityX, actualVelocityY);
-
-		errorXAvg /= (double)ITERATIONS;
-		errorYAvg /= (double)ITERATIONS;
-		errorVxAvg /= (double)ITERATIONS;
-		errorVyAvg /= (double)ITERATIONS;
-
-		System.out.format("Error Average : %.5f, %.5f | %.5f, %.5f%n", errorXAvg, errorYAvg, errorVxAvg, errorVyAvg);
-		System.out.format("Error Total   : %f", errorXAvg + errorYAvg + errorVxAvg + errorVyAvg);
 	}
 
 	public static Belief getBelief() {

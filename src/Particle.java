@@ -6,7 +6,7 @@ public class Particle {
 
 	public static final Particle EMPTY = new Particle(0.0, 0.0, 0.0, 0.0);
 
-	private int ticksWithoutLoadedChunk;
+	private double ticksWithoutLoadedChunk;
 
 	private double x;
 	private double y;
@@ -15,7 +15,7 @@ public class Particle {
 
 	public Particle(double x, double y, double vx, double vy)
 	{
-		this.ticksWithoutLoadedChunk = 0;
+		this.ticksWithoutLoadedChunk = 0.0;
 
 		this.x  = x;
 		this.y  = y;
@@ -33,18 +33,41 @@ public class Particle {
 		this.vy = other.vy;
 	}
 
+	/*
+	 * Mutates the particles velocity and position
+	 */
 	public void mutate() {
-		double theta  = Math.atan2(vy, vx);
-		double radius = Math.sqrt((vx * vx) + (vy * vy));
+		double angle     = Math.atan2(vy, vx);
+		double magnitude = Math.sqrt((vx * vx) + (vy * vy));
 
-		theta  += Main.RANDOM.nextDouble(-VELOCITY_ANGLE_CHANGE, VELOCITY_ANGLE_CHANGE);//VELOCITY_ANGLE_CHANGE * ((2.0 * val) - 1.0);
-		radius += Main.RANDOM.nextDouble(-VELOCITY_MAGNITUDE_CHANGE, VELOCITY_MAGNITUDE_CHANGE);//Main.RANDOM.nextDouble(1.0 - VELOCITY_MAGNITUDE_CHANGE, 1.0 + VELOCITY_MAGNITUDE_CHANGE);
+		angle     += calcVelocityAngleMutate();
+		magnitude += calcVelocityMagnitudeMutate();
 
-		this.vx = radius * Math.cos(theta);
-		this.vy = radius * Math.sin(theta);
+		this.vx = magnitude * Math.cos(angle);
+		this.vy = magnitude * Math.sin(angle);
 
 		this.x += POSITION_CHANGE * (Main.RANDOM.nextDouble() - 0.5);
 		this.y += POSITION_CHANGE * (Main.RANDOM.nextDouble() - 0.5);
+	}
+
+	/*
+	 * Calculates how much to mutate the angle of velocity
+	 */
+	private double calcVelocityAngleMutate() {
+		return Main.RANDOM.nextDouble(
+			-VELOCITY_ANGLE_CHANGE - (ticksWithoutLoadedChunk / 1024.0),
+			VELOCITY_ANGLE_CHANGE + (ticksWithoutLoadedChunk / 1024.0)
+		);
+	}
+
+	/*
+	 * Calculates how much to mutate the magnitude of velocity
+	 */
+	private double calcVelocityMagnitudeMutate() {
+		return Main.RANDOM.nextDouble(
+			-VELOCITY_MAGNITUDE_CHANGE - (ticksWithoutLoadedChunk / 1024.0),
+			VELOCITY_MAGNITUDE_CHANGE + (ticksWithoutLoadedChunk / 1024.0)
+		);
 	}
 
 	public double getWeight(Environment env) {
@@ -56,13 +79,13 @@ public class Particle {
 			return 0.95;
 		}
 
-		ticksWithoutLoadedChunk++;
-		return calculateNotOnLoadedChunkWeight();
+		ticksWithoutLoadedChunk += 1.0;
+		return calcNotOnLoadedChunkWeight();
 	}
 
 	// the fewer updates we receive on loaded chunks, the higher this probability must become to combat that and account for possibly loaded chunks
-	private double calculateNotOnLoadedChunkWeight() {
-		return 0.075 + ((double)ticksWithoutLoadedChunk / 512.0);
+	private double calcNotOnLoadedChunkWeight() {
+		return 0.075 + (ticksWithoutLoadedChunk / 512.0);
 	}
 
 	public void move() {
@@ -75,6 +98,14 @@ public class Particle {
 			(x >= 0f && y >= 0f) &&
 			(x < Environment.SIZE && y < Environment.SIZE)
 		);
+	}
+
+	public int getChunkX() {
+		return (int)x;
+	}
+
+	public int getChunkY() {
+		return (int)y;
 	}
 
 	public double getX() {
