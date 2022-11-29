@@ -46,18 +46,25 @@ public class Belief {
 
 	public Particle getPredictedParticle() {
 		Particle result = new Particle(Particle.EMPTY);
+		double weightSum = 0.0;
 
 		for (Particle here : particles) {
-			result.setX (result.getX()  + here.getX());
-			result.setY (result.getY()  + here.getY());
-			result.setVx(result.getVx() + here.getVx());
-			result.setVy(result.getVy() + here.getVy());
+			double weight = here.getWeight(environment);
+			weightSum += weight;
+			double dx  = weight * here.getX();
+			double dy  = weight * here.getY();
+			double dvx = weight * here.getVx();
+			double dvy = weight * here.getVy();
+			result.setX (result.getX()  + dx );
+			result.setY (result.getY()  + dy );
+			result.setVx(result.getVx() + dvx);
+			result.setVy(result.getVy() + dvy);
 		}
 
-		result.setX (result.getX()  / (double)PARTICLE_COUNT);
-		result.setY (result.getY()  / (double)PARTICLE_COUNT);
-		result.setVx(result.getVx() / (double)PARTICLE_COUNT);
-		result.setVy(result.getVy() / (double)PARTICLE_COUNT);
+		result.setX (result.getX()  / weightSum);
+		result.setY (result.getY()  / weightSum);
+		result.setVx(result.getVx() / weightSum);
+		result.setVy(result.getVy() / weightSum);
 
 		return result;
 	}
