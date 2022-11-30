@@ -68,10 +68,10 @@ public class Main {
 
 			// write out info
 			{
-				double errorX  = BeliefRenderer.CHUNK_SIZE * Math.abs(prediction.getX()  - actualPositionX);
-				double errorY  = BeliefRenderer.CHUNK_SIZE * Math.abs(prediction.getY()  - actualPositionY);
-				double errorVx = BeliefRenderer.CHUNK_SIZE * Math.abs(prediction.getVx() - actualVelocityX);
-				double errorVy = BeliefRenderer.CHUNK_SIZE * Math.abs(prediction.getVy() - actualVelocityY);
+				double errorX  = Math.abs(prediction.getX()  - actualPositionX);
+				double errorY  = Math.abs(prediction.getY()  - actualPositionY);
+				double errorVx = Math.abs(prediction.getVx() - actualVelocityX);
+				double errorVy = Math.abs(prediction.getVy() - actualVelocityY);
 
 				System.out.format("Error           : %.2f, %.2f | %.2f, %.2f%n", errorX, errorY, errorVx, errorVy);
 				System.out.format("Error Total Pos : %f (%f far away from true position)%n", (errorX + errorY), Math.sqrt((errorX * errorX) + (errorY * errorY)));

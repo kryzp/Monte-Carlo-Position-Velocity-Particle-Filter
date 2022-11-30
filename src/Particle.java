@@ -76,14 +76,26 @@ public class Particle {
 		// check if chunk is loaded, if it is there is a high probability that this particle is in the right spot
 		if (isOnLoadedChunk) {
 			ticksWithoutLoadedChunk = 0;
-			return 0.95;
+			return calcOnLoadedChunkWeight();
 		}
 
 		ticksWithoutLoadedChunk += 1.0;
 		return calcNotOnLoadedChunkWeight();
 	}
 
-	// the fewer updates we receive on loaded chunks, the higher this probability must become to combat that and account for possibly loaded chunks
+	/*
+	 * Calculates the weight probability when the particle IS on a loaded chunk
+	 */
+	private double calcOnLoadedChunkWeight() {
+		return 0.95 + (0.025 * Main.RANDOM.nextDouble());
+	}
+
+	/*
+	 * Calculates the weight probability when the particle is NOT on a loaded chunk
+	 *
+	 * The fewer updates we receive on loaded chunks, the higher this probability
+	 * must become to combat that and account for possibly loaded chunks
+	 */
 	private double calcNotOnLoadedChunkWeight() {
 		return 0.075 + (ticksWithoutLoadedChunk / 512.0);
 	}
