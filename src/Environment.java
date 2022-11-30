@@ -1,38 +1,30 @@
+import java.util.ArrayList;
+
 public class Environment {
 
 	public static final int SIZE = 16;
 
-	private final int[][] loadedChunks;
+	private final ArrayList<Pair<Integer, Integer>> LOADED_CHUNKS;
 
 	public Environment() {
-		loadedChunks = new int[SIZE][SIZE];
+		LOADED_CHUNKS = new ArrayList<Pair<Integer, Integer>>();
 	}
 
 	public void resetLoadedChunks() {
-		for (int y = 0; y < SIZE; y++) {
-			for (int x = 0; x < SIZE; x++) {
-				loadedChunks[y][x] = 0;
-			}
-		}
+		LOADED_CHUNKS.clear();
 	}
 
 	public void setLoadedChunk(int x, int y) {
-		if (isChunkOutOfBounds(x, y)) {
-			return;
-		}
-
-		loadedChunks[y][x] = 1;
-	}
-
-	public boolean isChunkOutOfBounds(int x, int y) {
-		return x < 0 || y < 0 || x >= SIZE || y >= SIZE;
+		LOADED_CHUNKS.add(new Pair<Integer, Integer>(x, y));
 	}
 
 	public boolean isLoadedChunkAt(int x, int y) {
-		if (isChunkOutOfBounds(x, y)) {
-			return false;
+		for (var c : LOADED_CHUNKS) {
+			if (c.first() == x && c.second() == y) {
+				return true;
+			}
 		}
 
-		return loadedChunks[y][x] == 1;
+		return false;
 	}
 }

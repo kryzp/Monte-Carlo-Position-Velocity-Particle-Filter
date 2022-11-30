@@ -71,7 +71,7 @@ public class Belief {
 	}
 
 	/*
-	 * Calculate weighted mean particle with weights making
+	 * Computes a weighted mean particle with weights making
 	 * more likely particles more probable and have more effect on the mean
 	 */
 	public Particle getPredictedParticle() {
