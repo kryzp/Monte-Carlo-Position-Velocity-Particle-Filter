@@ -3,7 +3,7 @@ import java.util.ArrayList;
 public class Belief {
 
 	public static final int PARTICLE_COUNT = 1024;
-	public static final int RANDOM_PARTICLE_COUNT = 64;
+	public static final int RANDOM_PARTICLE_COUNT = 1; // lower values lead to a more precise velocity and position, but increase the risk of losing the target when it rapidly diverges from a linear path. higher values increase uncertainty in exact position and velocity but decrease the chance of losing the target entirely. the value must be changed experimentally.
 
 	private final Environment environment;
 
@@ -58,10 +58,10 @@ public class Belief {
 		result.setY(chunkY + Main.RANDOM.nextDouble());
 
 		// randomize direction
-		double theta  = Main.RANDOM.nextDouble() * Math.PI * 2.0;
+		double theta  = Main.RANDOM.nextDouble() * 2.0 * Math.PI;
 
 		// randomize speed
-		double radius = Main.RANDOM.nextDouble(0.25, 1.75);
+		double radius = Main.RANDOM.nextDouble(0.0, 0.1);
 
 		// convert polar to cartesian
 		result.setVx(radius * Math.cos(theta));
@@ -80,7 +80,6 @@ public class Belief {
 
 		for (Particle here : particles) {
 			double weight = here.getWeight(environment);
-			weightSum += weight;
 			double dx  = weight * here.getX();
 			double dy  = weight * here.getY();
 			double dvx = weight * here.getVx();
@@ -89,6 +88,7 @@ public class Belief {
 			result.setY (result.getY()  + dy );
 			result.setVx(result.getVx() + dvx);
 			result.setVy(result.getVy() + dvy);
+			weightSum += weight;
 		}
 
 		result.setX (result.getX()  / weightSum);

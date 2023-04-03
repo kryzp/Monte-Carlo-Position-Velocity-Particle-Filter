@@ -37,17 +37,22 @@ public class Particle {
 	 * Mutates the particles velocity and position
 	 */
 	public void mutate() {
-		double angle     = Math.atan2(vy, vx);
-		double magnitude = Math.sqrt((vx * vx) + (vy * vy));
+		this.x  += this.vx * Main.RANDOM.nextGaussian();
+		this.y  += this.vy * Main.RANDOM.nextGaussian();
+		this.vx += 0.0005f * Main.RANDOM.nextGaussian();
+		this.vy += 0.0005f * Main.RANDOM.nextGaussian();
 
-		angle     += calcVelocityAngleMutate();
-		magnitude += calcVelocityMagnitudeMutate();
-
-		this.vx = magnitude * Math.cos(angle);
-		this.vy = magnitude * Math.sin(angle);
-
-		this.x += POSITION_CHANGE * (Main.RANDOM.nextDouble() - 0.5);
-		this.y += POSITION_CHANGE * (Main.RANDOM.nextDouble() - 0.5);
+//		double angle     = Math.atan2(vy, vx);
+//		double magnitude = Math.sqrt((vx * vx) + (vy * vy));
+//
+//		angle     += 0.1 * calcVelocityAngleMutate();
+//		magnitude += 0.1 * calcVelocityMagnitudeMutate();
+//Ω
+//		this.vx = magnitude * Math.cos(angle);
+//		this.vy = magnitude * Math.sin(angle);
+//
+//		this.x += POSITION_CHANGE * (Main.RANDOM.nextDouble() - 0.5);
+//		this.y += POSITION_CHANGE * (Main.RANDOM.nextDouble() - 0.5);
 	}
 
 	/*

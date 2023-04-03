@@ -1,31 +1,46 @@
-import java.io.IOException;
+import javax.swing.*;
+import java.awt.*;
 import java.util.Random;
 
 public class Main {
 	public static final Random RANDOM = new Random();
 
 	private static Belief belief;
+	private static Environment environment;
+
+	private static double actualPositionX = 0.0;
+	private static double actualPositionY = 0.0;
+	private static double actualVelocityX = 0.02;
+	private static double actualVelocityY = 0.0125;
 
 	/*
 	 * Entry Point
 	 */
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) {
 
-		Environment environment = new Environment();
+		environment = new Environment();
 		belief = new Belief(environment, 0, 0);
-
-		int renderProgress = 0;
-
-		double actualPositionX = 0.0;
-		double actualPositionY = 0.0;
-		double actualVelocityX = 0.2;
-		double actualVelocityY = 0.125;
-
-		BeliefRenderer.clearOutputFolder();
 
 		boolean once = true;
 
-		for (int i = 0; i < 512; i++) {
+		JFrame frame = new JFrame("Monte Carlo");
+		frame.setContentPane(new JComponent() {
+			@Override
+			public void paintComponent(Graphics g) {
+				BeliefRenderer.drawImageOfBelief(
+					actualPositionX, actualPositionY,
+					actualVelocityX, actualVelocityY,
+					belief, environment,
+					(int)actualPositionX, (int)actualPositionY, g
+				);
+			}
+		});
+		frame.setFocusable(true);
+		frame.setVisible(true);
+		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+		frame.setSize(BeliefRenderer.RENDER_SIZE, BeliefRenderer.RENDER_SIZE);
+
+		while (true) {
 
 			int chunkX = (int)actualPositionX;
 			int chunkY = (int)actualPositionY;
@@ -42,58 +57,31 @@ public class Main {
 				}
 			}
 
-			// periodically remove all known loaded chunks from environment
-			if (i % 8 == 0) {
-				environment.resetLoadedChunks();
-			}
-
 			// we can only poll the environment every 4 ticks (limitation)
-			if (i % 4 == 0) {
-				environment.setLoadedChunk(chunkX - 1, chunkY - 1);
-				environment.setLoadedChunk(chunkX + 0, chunkY - 1);
-				environment.setLoadedChunk(chunkX + 1, chunkY - 1);
-				environment.setLoadedChunk(chunkX - 1, chunkY + 0);
-				environment.setLoadedChunk(chunkX + 0, chunkY + 0);
-				environment.setLoadedChunk(chunkX + 1, chunkY + 0);
-				environment.setLoadedChunk(chunkX - 1, chunkY + 1);
-				environment.setLoadedChunk(chunkX + 0, chunkY + 1);
-				environment.setLoadedChunk(chunkX + 1, chunkY + 1);
+			//if (i % 4 == 0) {
+			environment.resetLoadedChunks();
+			for (int y = 0; y < 3; y++) {
+				for (int x = 0; x < 3; x++) {
+					environment.setLoadedChunk(chunkX + x - 1, chunkY + y - 1);
+				}
 			}
+			//}
 
 			// update our current belief
 			belief.update();
 
-			// get the current prediction of the belief
-			Particle prediction = belief.getPredictedParticle();
-
 			// write out info
-			{
-				double errorX  = BeliefRenderer.CHUNK_SIZE * Math.abs(prediction.getX()  - actualPositionX);
-				double errorY  = BeliefRenderer.CHUNK_SIZE * Math.abs(prediction.getY()  - actualPositionY);
-				double errorVx = BeliefRenderer.CHUNK_SIZE * Math.abs(prediction.getVx() - actualVelocityX);
-				double errorVy = BeliefRenderer.CHUNK_SIZE * Math.abs(prediction.getVy() - actualVelocityY);
+			frame.repaint();
 
-				System.out.format("Error           : %.2f, %.2f | %.2f, %.2f%n", errorX, errorY, errorVx, errorVy);
-				System.out.format("Error Total Pos : %f (%f far away from true position)%n", (errorX + errorY), Math.sqrt((errorX * errorX) + (errorY * errorY)));
-				System.out.format("Error Total Vel : %f%n%n", errorVx + errorVy);
-
-				BeliefRenderer.drawImageOfBelief(
-					actualPositionX, actualPositionY,
-					actualVelocityX, actualVelocityY,
-					chunkX, chunkY,
-					renderProgress
-				);
-
-				renderProgress++;
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
 
 			// update position
 			actualPositionX += actualVelocityX;
 			actualPositionY += actualVelocityY;
 		}
-	}
-
-	public static Belief getBelief() {
-		return belief;
 	}
 }
